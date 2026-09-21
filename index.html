@@ -548,7 +548,7 @@ function ucMinis(id){const sal=series(D.sales),salPY=series(D.salesPY);
   $("#"+id).innerHTML=["MTD","YTD","MAT"].map(pp=>{
     const a={MTD:sal[17],YTD:sal.slice(12,18).reduce((x,y)=>x+y,0),MAT:sal.slice(6,18).reduce((x,y)=>x+y,0)}[pp];
     const b={MTD:salPY[17],YTD:salPY.slice(12,18).reduce((x,y)=>x+y,0),MAT:salPY.slice(6,18).reduce((x,y)=>x+y,0)}[pp];
-    return `<div class="mini"><div class="c">${pp}</div><div class="v">${fmtM(a)}</div><div class="d">▲ ${((a/b-1)*100).toFixed(1)}% vs LY</div></div>`;}).join("");}
+    return `<div class="mini"><div class="c">${pp}</div><div class="v">${fmtM(a)}</div></div>`;}).join("");}
 function mediaLineCombo(id,o){
   const {s,w,h}=clearSVG(id);
   const view=o.mediaView||"Total media";const showLeg=(view==="Split by channel");

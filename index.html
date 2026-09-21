@@ -216,7 +216,9 @@
               <div class="pf"><label>Channel</label><select id="pfRetChan"><option>All</option><option>In-store</option><option>Online</option></select></div>
             </div>
             <svg id="eposRet"></svg></div>
-          <div class="viz" id="card-sov"><h3>Share of voice &amp; competitive timing</h3><div class="sub">Monthly share of voice by competitor · 100% stacked · windowed to master period · TV/OOH monitoring</div><svg id="bizCompSov"></svg></div>
+          <div class="viz" id="card-sov"><h3>Competitive SOV · <em id="sovScope">selected period</em></h3><div class="sub">Media investment by brand, selected period · % = share of voice</div>
+            <div class="pf" style="position:absolute; right:10px; top:7px; gap:5px;"><label>Category</label><select id="pfSovCat"></select></div>
+            <svg id="bizCompSov"></svg></div>
         </div>
         <div class="grid rows" style="grid-template-columns:1fr 1fr; grid-auto-rows:236px;">
           <div class="viz" id="card-promo"><h3>Promo vs non-promo sales · <em>monthly</em> <span class="badge" style="margin-left:4px; vertical-align:middle;">EPOS</span></h3><div class="sub">Promo share of sell-out — promo dependency watch</div><svg id="eposPromo"></svg></div>
@@ -367,7 +369,11 @@ const D = {
       "NPS":[31.0,31.2,31.6,31.4,31.3,31.5,31.8,31.9,32.2,32.4,32.5,32.8,32.6,33.4,34.2,33.9,33.8,34.0],
       "Perception":[58,58,59,59,58,59,60,60,61,61,62,62,63,64,64,65,65,66],
       "Salience":[64,64,65,65,64,65,66,66,67,67,68,68,69,70,70,71,71,72],
-      "Brand communication":[54,54,55,55,54,55,55,56,56,57,57,62,63,64,64,65,65,66]},
+      "Brand communication":[54,54,55,55,54,55,55,56,56,57,57,62,63,64,64,65,65,66],
+      "Spontaneous":[48.2,48.4,48.9,48.7,48.6,48.8,49.1,49.3,49.6,49.9,50.1,51.4,51.9,52.6,53.4,53.1,53.0,53.5],
+      "TOM":[21.4,21.5,21.9,21.7,21.6,21.8,22.0,22.1,22.3,22.5,22.6,24.8,25.3,25.9,26.6,26.3,26.2,26.7],
+      "First Choice":[28.1,28.2,28.6,28.4,28.3,28.5,28.7,28.8,29.1,29.3,29.4,29.8,29.9,30.6,31.4,31.2,31.1,31.5],
+      "Affinity":[43.6,43.7,44.0,43.9,43.8,44.0,44.2,44.3,44.5,44.7,44.8,45.2,45.3,45.9,46.5,46.3,46.2,46.6]},
  bhtVars:{Awareness:[78,76],Familiarity:[71,70],Consideration:[64,61],Preference:[58,56],Trust:[74,73],Advocacy:[52,50]},
  bhtTracker:{
   funnel:{months:["Top of mind","Spontaneous","Aided aware","Tried"],series:{"Puck":[29,72,99,98],"Almarai":[37,87,99,99],"Kiri":[15,60,97,96]}},
@@ -458,7 +464,7 @@ const D = {
     txt:"Same Business Performance view — filtered to Puck × Cheese × KSA. The Ramadan flight (Feb–Mar 26) is banded on the sales-vs-media trend: sales run +18% above the LY baseline inside the band and settle higher after it. The channel-split media bars show the flight money sat in TV + Social, and media contribution reads 34% — the flight, not price, carried the quarter."},
   UC2:{v:1,pg:"biz",ct:"Cheese",mk:"KSA",anno:{i:14,t:"Growth gap vs LY narrows"},
     title:"Sales are up — but are we winning the category?",who:"Head of Marketing · Business Performance",
-    txt:"Cheese × KSA, one page: the sales trend grows but the gap to the LY line narrows through March while our SOV holds at 35%. The share-of-voice & competitive timing chart carries the story — the category stays crowded and Arla’s share climbs only gradually (33% to 38%) while three competitors hold the balance. Recommendation: defend Q1 KSA TV presence next season."},
+    txt:"Cheese × KSA, one page: the sales trend grows but the gap to the LY line narrows through March while our SOV holds at 35%. The Competitive SOV chart carries the story — the category stays crowded and Arla’s share climbs only gradually (33% to 38%) while three competitors hold the balance. Recommendation: defend Q1 KSA TV presence next season."},
   UC3:{v:2,pg:"biz",kpi:"Consideration",flight:[13,14],anno:null,
     title:"Is media building the brand, not just sales?",who:"Marketing Lead · Business Performance",
     txt:"Same view — the brand-KPI filter is switched to Consideration. The line steps 62.1 → 63.8 exactly across the Ramadan band and holds after the flight ends: media is compounding brand strength, not renting attention. Equity +1.3 pts YoY at 72.4 backs the same story."}}
@@ -469,10 +475,26 @@ const SEQ=[C.petrol,C.sky,C.navy,C.teal,C.aqua,C.indigo,C.ink,C.mute];
 const CH={TV:"#0F9ED5",OOH:"#2FA84F",Social:"#F2A900",Display:"#6C4FB0",Ecom:"#E5528C"};
 const CHNAMES=["TV","OOH","Social","Display","Ecom"];
 const CHSHARE={TV:0.34,OOH:0.10,Social:0.22,Display:0.18,Ecom:0.16};
+/* Competitive investment by brand x category x month (AED K). Illustrative, except Jan-Mar 26 brand mix for
+   Almarai / Puck / Lurpak / President, which is re-scaled to the real TV/OOH competitive monitoring shares (D.compSov). */
+D.compSpend=(function(){
+  const mix={"Almarai":{"Cheese":260,"Long Life Dairy":320,"Cream":120,"Butter & Spreads":90,"Labneh":70},
+    "Puck":{"Cheese":210,"Cream":140,"Labneh":40},"Lurpak":{"Butter & Spreads":150},"Arla":{"Long Life Dairy":60,"Cheese":70},
+    "President":{"Cheese":90,"Butter & Spreads":50},"Kiri":{"Cheese":110},"NADEC":{"Long Life Dairy":150,"Labneh":45,"Cheese":40},
+    "Al Safi":{"Long Life Dairy":110,"Labneh":35}};
+  const seas=[0.8,1.3,1.6,0.9,0.7,0.6,0.7,0.8,1.0,1.1,1.0,1.2,0.9,1.5,1.7,1.0,0.8,0.7];
+  const brands=Object.keys(mix),data={};
+  brands.forEach((b,bi)=>{data[b]={};Object.keys(mix[b]).forEach((c,ci)=>{
+    data[b][c]=seas.map((s,i)=>Math.round(mix[b][c]*s*(1+0.18*Math.sin(i*1.7+bi*2.3+ci))));});});
+  const real=D.compSov.series,bt=(b,m)=>Object.values(data[b]).reduce((a,arr)=>a+arr[m],0);
+  [12,13,14].forEach((m,k)=>{const rb=Object.keys(real),T=rb.reduce((a,b)=>a+bt(b,m),0);
+    rb.forEach(b=>{const cur=bt(b,m),tgt=real[b][k]/100*T,fx=cur?tgt/cur:0;Object.keys(data[b]).forEach(c=>{data[b][c][m]=Math.round(data[b][c][m]*fx);});});});
+  return {brands,data,arla:["Puck","Lurpak","Arla"]};})();
+const ARLACOL={"Puck":"#156082","Lurpak":"#0F9ED5","Arla":"#0B76A0"};
 const SOVCOL={Almarai:"#E0722F",Puck:"#156082",Lurpak:"#0F9ED5",President:"#7E4A5A",NADEC:"#9A9A3E",Arla:"#156082",Others:"#B9BEC4"};
 function syncControls(){const set=(id,v)=>{const e=$("#"+id);if(e)e.value=v;};
   set("pfSalesMedia",S.bizMediaView);set("pfSalesLine",S.bizSalesMetric);
-  set("pfKpiMedia",S.bizKpiMediaView);set("pfKpiMetric",S.bizKpi);}
+  set("pfKpiMedia",S.bizKpiMediaView);set("pfKpiMetric",S.bizKpi);set("pfSovCat",S.sovCat);}
 function medBundle(){const med=series(D.media);const medW=win(med),mbc={};
   CHNAMES.forEach(cn=>{const sh=win(D.mediaChShare[cn]);mbc[cn]=medW.map((v,i)=>Math.round(v*sh[i]));});
   return {medW,mbc};}
@@ -594,9 +616,31 @@ function sovStack(id,dat,cmap){
     txt(s,lx+10,h-3,k,7.5,C.hgrey,"start");});
 }
 
+function compSovBars(id){
+  const {s,w,h}=clearSVG(id);const p={l:40,r:10,t:16,b:20};const iw=w-p.l-p.r,ih=h-p.t-p.b;
+  const allCats=Object.keys(D.cats).filter(c=>c!=="All categories");
+  const cats=S.sovCat==="All categories"?allCats:[S.sovCat],tot={};
+  D.compSpend.brands.forEach(b=>{let v=0;cats.forEach(c=>{const a=D.compSpend.data[b][c];if(a)v+=win(a).reduce((x,y)=>x+y,0);});if(v>0)tot[b]=v;});
+  const ks=Object.keys(tot).sort((a,b)=>tot[b]-tot[a]),all=ks.reduce((a,k)=>a+tot[k],0);
+  if(!ks.length){txt(s,w/2,h/2,"No competitive investment in "+S.sovCat+" for the selected period",9,C.mute,"middle");return;}
+  const fmt=v=>v>=1000?(+(v/1000).toFixed(v>=10000?0:1))+"M":Math.round(v)+"K";
+  const raw=Math.max(...ks.map(k=>tot[k]))*1.12/4,mag=Math.pow(10,Math.floor(Math.log10(raw))),st=[1,1.5,2,2.5,3,4,5,6,8,10].map(x=>x*mag).find(x=>x>=raw),max=st*4;
+  [0,.25,.5,.75,1].forEach(g=>{const y=p.t+ih*(1-g);s.appendChild(svgEl("line",{x1:p.l,y1:y,x2:w-p.r,y2:y,stroke:"#EDEFF1"}));
+    txt(s,p.l-4,y+3,g?fmt(max*g):"0",7,C.mute,"end");});
+  [["Arla portfolio",C.petrol],["Competitors","#A7ADB4"]].forEach(([l,c],j)=>{const lx=w-p.r-150+j*80;
+    s.appendChild(svgEl("rect",{x:lx,y:p.t-2,width:7,height:7,rx:2,fill:c}));txt(s,lx+10,p.t+5,l,7.5,C.hgrey,"start");});
+  txt(s,2,p.t-6,"AED",7,C.mute,"start");
+  const bw=iw/ks.length;
+  ks.forEach((k,i)=>{const v=tot[k],bh=v/max*ih,bwv=Math.min(bw*0.62,56),x=p.l+i*bw+(bw-bwv)/2,sov=v/all*100,isA=D.compSpend.arla.includes(k);
+    const r=svgEl("rect",{x,y:p.t+ih-bh,width:bwv,height:bh,rx:2,fill:isA?ARLACOL[k]:"#A7ADB4"});s.appendChild(r);
+    bindTip(r,`<b>${k}</b>${isA?" · Arla portfolio":""}<br>Investment: AED ${fmt(v)}<br>SOV: ${sov.toFixed(1)}% · ${S.sovCat}<br>${perLbl()}`);
+    txt(s,x+bwv/2,p.t+ih-bh-4,fmt(v),8,C.hgrey,"middle",600);
+    if(bh>16)txt(s,x+bwv/2,p.t+ih-bh+12,Math.round(sov)+"%",8,"#fff","middle",600);
+    txt(s,p.l+i*bw+bw/2,h-6,k,8,isA?C.petrol:C.hgrey,"middle",isA?600:400);});
+}
 /* ===================== STATE ===================== */
 let S={pg:"biz",mk:"All markets",ct:"All categories",br:"All brands",from:6,to:17,uc:null,flight:null,anno:null,
-       bizKpi:"Brand equity",bizMediaView:"Split by channel",bizSalesMetric:"Sales value",bizKpiMediaView:"Total media",
+       bizKpi:"Awareness",sovCat:"All categories",bizMediaView:"Split by channel",bizSalesMetric:"Sales value",bizKpiMediaView:"Total media",
        bhtMetric:"Consideration",salesMetric:"Value",multiType:"All",webType:"All",
        pfPlat:"All platforms",pfCamp:"All campaigns",pfObj:"All objectives",pfRmRet:"All retailers",pfRmPlc:"All placements",
        pfRetailer:"All retailers",pfPromo:"All sales",pfRetChan:"All",
@@ -798,17 +842,18 @@ function renderBiz(){
   const onlineSub=S.pfRetailer==="All retailers"?"of retail sell-out · EPOS":S.pfRetailer+" · EPOS";
   $("#bizKpis").innerHTML=
     kpi("Sales value · selected period",fmtM(sAgg),Math.abs(d).toFixed(1)+"% vs LY",d>=0)
-   +kpi("Brand equity","72.4","1.3 pts YoY",true,"Kantar 0–100")
+   +(()=>{const fc=D.bht["First Choice"],n=fc[S.to],ly=S.to>=12?fc[S.to-12]:null,dl=ly!=null?n-ly:null;
+      return kpi("First choice",n.toFixed(1)+"%",dl!=null?Math.abs(dl).toFixed(1)+" pts vs LY":"",dl==null||dl>=0,"Kantar BHT · "+D.months[S.to]);})()
    +kpi("Media spend",mAgg>=1000?("AED "+(mAgg/1000).toFixed(1)+"M"):fmtK(mAgg),"5.6% MoM",true,perLbl())
    +kpi("Media contribution","34%","0.8 pts vs LY",true,"of total sales")
    +kpi("Arla SOV","36%","2 pts vs SPLY",true,"share of voice")
-   +kpi("Online sales contribution",onlineContrib+"%","2.4 pts vs LY",true,onlineSub);
+   +kpi("Ecom contribution",onlineContrib+"%","2.4 pts vs LY",true,onlineSub);
   ucMinis("bizMinis");
   const L=lineForMetric(S.bizSalesMetric);
   mediaLineCombo("bizCombo",{medByCh:mbc,medTot:medW,mediaView:S.bizMediaView,line:L.line,linePY:L.linePY,lineName:L.name,lineFmt:L.fmt,lyFmt:L.lyfmt,lmin:L.lmin,flight:(S.ucFocus==="uc1")?winFlight([13,14]):null,flightLabel:"Ramadan"});
-  const bk=D.bht[S.bizKpi]||D.bht["Brand equity"];$("#bizKpiName").textContent=S.bizKpi;
-  mediaLineCombo("bizKpiCombo",{medByCh:mbc,medTot:medW,mediaView:S.bizKpiMediaView,line:win(bk),linePY:null,lineName:S.bizKpi,lineFmt:v=>v.toFixed(1)+" idx",lmin:Math.min(...bk)-1.5,lyFmt:v=>v.toFixed(0)});
-  sovStack("bizCompSov",D.compSov,SOVCOL);
+  const bk=D.bht[S.bizKpi]||D.bht["Awareness"];$("#bizKpiName").textContent=S.bizKpi;
+  mediaLineCombo("bizKpiCombo",{medByCh:mbc,medTot:medW,mediaView:S.bizKpiMediaView,line:win(bk),linePY:null,lineName:S.bizKpi,lineFmt:v=>v.toFixed(1)+"%",lmin:Math.min(...bk)-1.5,lyFmt:v=>v.toFixed(0)});
+  compSovBars("bizCompSov");$("#sovScope").textContent=perLbl();
   drawEpos({retSvg:"eposRet",promoSvg:"eposPromo",skuTbl:"#eposSkus",retScope:"retScope",skuScope:"skuScope"});
   const _cards=["card-sales","card-kpi","card-ret","card-sov","card-promo","card-sku"];
   const _cfg=S.ucFocus?UCCFG[S.ucFocus]:null;
@@ -942,19 +987,19 @@ const UCCFG={
    flag:"value up, volume flat, price up \u2014 a price-driven illusion of media effectiveness.",
    focus:["card-sales"]},
  uc2:{title:"Is softer YoY growth a distribution problem or a brand problem?",
-   steps:"cycle the brand KPI <b>Awareness \u2192 Consideration \u2192 Perception \u2192 Salience \u2192 Brand communication</b>; check retailer sell-out spread, promo share, and OOS flags in the SKU table.",
+   steps:"cycle the brand KPI <b>Awareness \u2192 Spontaneous \u2192 TOM \u2192 First Choice \u2192 Affinity</b>; check retailer sell-out spread, promo share, and OOS flags in the SKU table.",
    good:"KPIs steady, promo share stable, no OOS on top SKUs \u2014 a demand/distribution gap.",
    flag:"KPIs also softening \u2014 the fix is upstream in messaging/media, not merchandising.",
    focus:["card-kpi","card-ret","card-promo","card-sku"]},
  uc3:{title:"How long does a brand communication uplift take to reflect in sales?",
-   steps:"set the brand KPI = <b>Brand communication</b> and find the sharpest step-up; on sales trend switch <b>Sales value / Sales volume</b> and find where sales accelerates; count the months between (the lag).",
+   steps:"set the brand KPI = <b>TOM</b> (top-of-mind) and find the sharpest step-up; on sales trend switch <b>Sales value / Sales volume</b> and find where sales accelerates; count the months between (the lag).",
    good:"a consistent, repeatable lag (e.g. 2\u20133 months) \u2014 the brand payback window.",
    flag:"no pattern \u2014 sales moves independently, or only alongside paid activation.",
    focus:["card-kpi","card-sales"]}};
 function applyUCPreset(uc){
   if(uc==="uc1"){S.bizMediaView="Split by channel";S.bizSalesMetric="Sales value";}
   else if(uc==="uc2"){S.bizKpi="Awareness";}
-  else if(uc==="uc3"){S.bizKpi="Brand communication";S.bizMediaView="Split by channel";S.bizSalesMetric="Sales value";}}
+  else if(uc==="uc3"){S.bizKpi="TOM";S.bizMediaView="Split by channel";S.bizSalesMetric="Sales value";}}
 function goPage(pg){
   const isUC=/^uc[123]$/.test(pg);
   S.ucFocus=isUC?pg:null;
@@ -963,7 +1008,7 @@ function goPage(pg){
   $$(".page").forEach(p=>p.classList.remove("on"));$("#pg-"+shown).classList.add("on");
   $$(".navbtn,.ucbtn").forEach(b=>b.classList.toggle("on",b.dataset.pg===pg));
   $("#pgname").textContent=PGNAMES[pg];$("#content").scrollTop=0;render();}
-function resetView(){S.mk="All markets";S.ct="All categories";S.br="All brands";S.from=6;S.to=17;S.bizKpi="Brand equity";S.bizMediaView="Split by channel";S.bizSalesMetric="Sales value";S.bizKpiMediaView="Total media";S.pfRetailer="All retailers";S.pfPromo="All sales";S.pfRetChan="All";
+function resetView(){S.mk="All markets";S.ct="All categories";S.br="All brands";S.from=6;S.to=17;S.bizKpi="Awareness";S.sovCat="All categories";S.bizMediaView="Split by channel";S.bizSalesMetric="Sales value";S.bizKpiMediaView="Total media";S.pfRetailer="All retailers";S.pfPromo="All sales";S.pfRetChan="All";
   S.ucFocus=null;
   $("#slMarket").value="All markets";$("#slCategory").value="All categories";$("#slBrand").value="All brands";
   $("#slFrom").value=D.months[6];$("#slTo").value=D.months[17];buildSegs();goPage("biz");}
@@ -984,7 +1029,7 @@ Object.keys(D.brands).forEach(k=>$("#slBrand").insertAdjacentHTML("beforeend",`<
 D.months.forEach(m=>{$("#slFrom").insertAdjacentHTML("beforeend",`<option>${m}</option>`);$("#slTo").insertAdjacentHTML("beforeend",`<option>${m}</option>`);});
 $("#slFrom").value=D.months[6];$("#slTo").value=D.months[17];
 $("#slMarket").onchange=e=>{S.mk=e.target.value;render();};
-$("#slCategory").onchange=e=>{S.ct=e.target.value;render();};
+$("#slCategory").onchange=e=>{S.ct=e.target.value;S.sovCat=e.target.value;render();};
 $("#slBrand").onchange=e=>{S.br=e.target.value;render();};
 $("#slFrom").onchange=e=>{S.from=D.months.indexOf(e.target.value);if(S.from>S.to){S.to=S.from;$("#slTo").value=e.target.value;}render();};
 $("#slTo").onchange=e=>{S.to=D.months.indexOf(e.target.value);if(S.to<S.from){S.from=S.to;$("#slFrom").value=e.target.value;}render();};
@@ -992,11 +1037,13 @@ $("#pfWebCat").onchange=()=>render();
 ["Split by channel","Total media","TV","OOH","Social","Display","Ecom"].forEach(o=>$("#pfSalesMedia").insertAdjacentHTML("beforeend",`<option>${o}</option>`));
 ["Sales value","Sales volume","Price per kg"].forEach(o=>$("#pfSalesLine").insertAdjacentHTML("beforeend",`<option>${o}</option>`));
 ["Total media","Split by channel","TV","OOH","Social","Display","Ecom"].forEach(o=>$("#pfKpiMedia").insertAdjacentHTML("beforeend",`<option>${o}</option>`));
-["Brand equity","Awareness","Consideration","Perception","Salience","Brand communication"].forEach(o=>$("#pfKpiMetric").insertAdjacentHTML("beforeend",`<option>${o}</option>`));
+["Awareness","Spontaneous","TOM","First Choice","Affinity"].forEach(o=>$("#pfKpiMetric").insertAdjacentHTML("beforeend",`<option>${o}</option>`));
 $("#pfSalesMedia").onchange=e=>{S.bizMediaView=e.target.value;render();};
 $("#pfSalesLine").onchange=e=>{S.bizSalesMetric=e.target.value;render();};
 $("#pfKpiMedia").onchange=e=>{S.bizKpiMediaView=e.target.value;render();};
 $("#pfKpiMetric").onchange=e=>{S.bizKpi=e.target.value;render();};
+Object.keys(D.cats).forEach(k=>$("#pfSovCat").insertAdjacentHTML("beforeend",`<option>${k}</option>`));
+$("#pfSovCat").onchange=e=>{S.sovCat=e.target.value;render();};
 $$(".navbtn").forEach(b=>b.onclick=()=>goPage(b.dataset.pg));
 ["img.logo",".ttl"].forEach(sel=>{const el=$("#hdr "+sel);if(el){el.style.cursor="pointer";el.title="Home \u2014 Business Performance";el.onclick=()=>goPage("biz");}});
 $$(".ucbtn").forEach(b=>b.onclick=()=>goPage(b.dataset.pg));

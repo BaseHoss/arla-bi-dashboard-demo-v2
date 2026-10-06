@@ -188,16 +188,12 @@
       <button class="navbtn" data-pg="web">Web Analytics<small>arla.com · GA4</small></button>
       <button class="navbtn" data-pg="comp">Competitive<small>monitoring & analysis</small></button>
       <button class="navbtn" data-pg="brand">Brand Health<small>Kantar BHT</small></button>
-      <div class="sect">Use cases (test views)</div>
-      <button class="ucbtn" data-pg="uc1">UC1 · Volume vs price<small>Ramadan media test</small></button>
-      <button class="ucbtn" data-pg="uc2">UC2 · Distribution vs brand<small>Soft YoY diagnosis</small></button>
-      <button class="ucbtn" data-pg="uc3">UC3 · Comms → sales lag<small>Brand payback window</small></button>
       <button id="resetBtn">⟲ Reset view</button>
     </div>
     <div id="content">
       <!-- ==================== BUSINESS PERFORMANCE ==================== -->
       <div class="page on" id="pg-biz">
-        <div class="pfbar hide" id="ucGuide" style="align-items:flex-start;"></div>
+        <div class="pfbar hide" id="ucGuide" style="display:none;"></div>
         <div class="kpirow" id="bizKpis"></div>
         <div class="grid rows" style="grid-template-columns:1fr 1fr; grid-auto-rows:252px;">
           <div class="viz" id="card-sales"><h3>Sales trend vs media spend</h3><div class="sub">Bars: media spend by selected view (AED K) · Line: selected sales metric</div>
@@ -208,19 +204,22 @@
             <svg id="bizKpiCombo"></svg></div>
         </div>
         <div class="grid rows" style="grid-template-columns:1fr 1fr; grid-auto-rows:248px;">
+          <div class="viz" id="card-camp"><h3>Campaign spend trend · <em id="campScope">selected period</em></h3><div class="sub">Arla campaigns · total media budget (AED) · click a bar to filter the two charts above</div>
+            <button id="campClear" style="display:none; position:absolute; right:10px; top:7px; font-family:inherit; font-size:9.5px; color:#fff; background:var(--sky); border:none; border-radius:4px; padding:3px 8px; cursor:pointer;"></button>
+            <svg id="bizCamp"></svg></div>
+          <div class="viz" id="card-sov"><h3>Competitive SOV · <em id="sovScope">selected period</em></h3><div class="sub">Media investment by brand, selected period · % = share of voice</div>
+            <div class="pf" style="position:absolute; right:10px; top:7px; gap:5px;"><label>Category</label><select id="pfSovCat"></select></div>
+            <svg id="bizCompSov"></svg></div>
+        </div>
+        <div class="grid rows" style="grid-template-columns:1fr 1fr 1fr; grid-auto-rows:248px;">
           <div class="viz" id="card-ret"><h3>Retail sell-out by retailer · <em id="retScope">YTD</em> <span class="badge" style="margin-left:4px; vertical-align:middle;">EPOS</span></h3>
             <div class="sub"><span style="color:var(--petrol);">■</span> In-store &nbsp; <span style="color:#E0722F;">■</span> Online-only &nbsp;·&nbsp; EPOS sell-out, AED K</div>
-            <div style="display:flex; gap:9px; align-items:center; margin:3px 0 1px;">
+            <div style="display:flex; gap:6px; align-items:center; margin:3px 0 1px; flex-wrap:wrap;">
               <div class="pf"><label>Retailer</label><select id="pfRetailer"><option>All retailers</option><option>Panda</option><option>Othaim</option><option>Lulu</option><option>Carrefour</option><option>Danube</option><option>Noon</option><option>Talabat</option></select></div>
               <div class="pf"><label>Promo</label><select id="pfPromo"><option>All sales</option><option>Promo</option><option>Non-promo</option></select></div>
               <div class="pf"><label>Channel</label><select id="pfRetChan"><option>All</option><option>In-store</option><option>Online</option></select></div>
             </div>
             <svg id="eposRet"></svg></div>
-          <div class="viz" id="card-sov"><h3>Competitive SOV · <em id="sovScope">selected period</em></h3><div class="sub">Media investment by brand, selected period · % = share of voice</div>
-            <div class="pf" style="position:absolute; right:10px; top:7px; gap:5px;"><label>Category</label><select id="pfSovCat"></select></div>
-            <svg id="bizCompSov"></svg></div>
-        </div>
-        <div class="grid rows" style="grid-template-columns:1fr 1fr; grid-auto-rows:236px;">
           <div class="viz" id="card-promo"><h3>Promo vs non-promo sales · <em>monthly</em> <span class="badge" style="margin-left:4px; vertical-align:middle;">EPOS</span></h3><div class="sub">Promo share of sell-out — promo dependency watch</div><svg id="eposPromo"></svg></div>
           <div class="viz" id="card-sku" style="overflow:hidden;"><h3>Top SKUs by rate of sale · <em id="skuScope">YTD · all Puck</em> <span class="badge" style="margin-left:4px; vertical-align:middle;">EPOS</span></h3><div id="eposSkus" style="overflow:auto; flex:1; margin-top:4px;"></div></div>
         </div>
@@ -491,6 +490,21 @@ D.compSpend=(function(){
     rb.forEach(b=>{const cur=bt(b,m),tgt=real[b][k]/100*T,fx=cur?tgt/cur:0;Object.keys(data[b]).forEach(c=>{data[b][c][m]=Math.round(data[b][c][m]*fx);});});});
   return {brands,data,arla:["Puck","Lurpak","Arla"]};})();
 const ARLACOL={"Puck":"#156082","Lurpak":"#0F9ED5","Arla":"#0B76A0"};
+D.arlaCamps=[
+  {n:"Ramadan 25",b:"Puck",f:[1,2],sp:980,mix:{TV:.48,OOH:.14,Social:.24,Display:.08,Ecom:.06}},
+  {n:"Summer Bake",b:"Lurpak",f:[4,5],sp:420,mix:{TV:.20,OOH:.10,Social:.40,Display:.15,Ecom:.15}},
+  {n:"Back to School",b:"Arla",f:[7,8],sp:380,mix:{TV:.10,OOH:.25,Social:.35,Display:.15,Ecom:.15}},
+  {n:"Blue Jar",b:"Puck",f:[8,10],sp:610,mix:{TV:.30,OOH:.10,Social:.35,Display:.15,Ecom:.10}},
+  {n:"Festive Baking",b:"Lurpak",f:[10,11],sp:450,mix:{TV:.25,OOH:.15,Social:.30,Display:.10,Ecom:.20}},
+  {n:"Protein Launch",b:"Arla Protein",f:[11,12],sp:520,mix:{TV:.15,OOH:.20,Social:.40,Display:.15,Ecom:.10}},
+  {n:"CC Pasta",b:"The Three Cows",f:[12,13],sp:300,mix:{TV:0,OOH:.10,Social:.60,Display:.20,Ecom:.10}},
+  {n:"Ramadan 26",b:"Puck",f:[12,14],sp:1240,mix:{TV:.45,OOH:.15,Social:.25,Display:.08,Ecom:.07}},
+  {n:"Cheddar Launch",b:"Puck",f:[15,16],sp:560,mix:{TV:.20,OOH:.20,Social:.35,Display:.15,Ecom:.10}},
+  {n:"Spreadable",b:"Lurpak",f:[16,17],sp:340,mix:{TV:.10,OOH:.10,Social:.40,Display:.15,Ecom:.25}}];
+D.pricePower=[6.1,6.1,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.5,6.5,6.6,6.6,6.8,6.9,6.9,6.9,7.0];
+const CAMPCOL={"Puck":"#156082","Lurpak":"#0F9ED5","Arla":"#0B76A0","Arla Protein":"#00C2A4","The Three Cows":"#162B51"};
+function campMonthly(c){const per=c.sp/(c.f[1]-c.f[0]+1);return winLab().map((_,i)=>{const m=S.from+i;return (m>=c.f[0]&&m<=c.f[1])?per:0;});}
+function campsInView(){return D.arlaCamps.filter(c=>c.f[1]>=S.from&&c.f[0]<=S.to&&(S.br==="All brands"||S.br===c.b));}
 const SOVCOL={Almarai:"#E0722F",Puck:"#156082",Lurpak:"#0F9ED5",President:"#7E4A5A",NADEC:"#9A9A3E",Arla:"#156082",Others:"#B9BEC4"};
 function syncControls(){const set=(id,v)=>{const e=$("#"+id);if(e)e.value=v;};
   set("pfSalesMedia",S.bizMediaView);set("pfSalesLine",S.bizSalesMetric);
@@ -563,7 +577,7 @@ function mediaLineCombo(id,o){
     s.appendChild(svgEl("rect",{x:x0,y:p.t,width:x1-x0,height:ih,fill:"#0F9ED5",opacity:.13}));
     s.appendChild(svgEl("rect",{x:x0,y:p.t,width:x1-x0,height:3,fill:C.sky}));
     txt(s,(x0+x1)/2,p.t+11,o.flightLabel||"Campaign flight",8.5,C.sky,"middle",600);}
-  const _useM=bmax>=1000;const fmtAxL=v=>v===0?"0":(_useM?(v/1000).toFixed(1)+"M":String(Math.round(v)));
+  const _useM=bmax>=1000;const fmtAxL=v=>v===0?"0":(_useM?(v/1000).toFixed(1)+"M":Math.round(v)+"K");
   [0,.25,.5,.75,1].forEach(g=>{const y=p.t+ih*(1-g);
     s.appendChild(svgEl("line",{x1:p.l,y1:y,x2:w-p.r,y2:y,stroke:"#EDEFF1"}));
     txt(s,p.l-3,y+3,fmtAxL(bmax*g),7,C.mute,"end");
@@ -616,6 +630,28 @@ function sovStack(id,dat,cmap){
     txt(s,lx+10,h-3,k,7.5,C.hgrey,"start");});
 }
 
+function campBars(id){
+  const {s,w,h}=clearSVG(id);const p={l:40,r:10,t:18,b:30};const iw=w-p.l-p.r,ih=h-p.t-p.b;
+  const cs=campsInView().map(c=>({c,v:campMonthly(c).reduce((a,b)=>a+b,0)}));
+  if(!cs.length){txt(s,w/2,h/2,"No Arla campaigns in the selected period"+(S.br!=="All brands"?" for "+S.br:""),9,C.mute,"middle");return;}
+  const fmt=v=>v>=1000?(+(v/1000).toFixed(1))+"M":Math.round(v)+"K";
+  const raw=Math.max(...cs.map(x=>x.v))*1.15/4,mag=Math.pow(10,Math.floor(Math.log10(raw))),st=[1,1.5,2,2.5,3,4,5,6,8,10].map(x=>x*mag).find(x=>x>=raw),max=st*4;
+  [0,.25,.5,.75,1].forEach(g=>{const y=p.t+ih*(1-g);s.appendChild(svgEl("line",{x1:p.l,y1:y,x2:w-p.r,y2:y,stroke:"#EDEFF1"}));
+    txt(s,p.l-4,y+3,g?fmt(max*g):"0",7,C.mute,"end");});
+  txt(s,2,p.t-7,"AED",7,C.mute,"start");
+  const bs=[...new Set(cs.map(x=>x.c.b))];
+  bs.forEach((b,j)=>{const lx=w-p.r-bs.length*78+j*78;s.appendChild(svgEl("rect",{x:lx,y:p.t-10,width:7,height:7,rx:2,fill:CAMPCOL[b]||C.petrol}));txt(s,lx+10,p.t-3,b,7.5,C.hgrey,"start");});
+  const bw=iw/cs.length;
+  cs.forEach(({c,v},i)=>{const bh=v/max*ih,bwv=Math.min(bw*0.6,54),x=p.l+i*bw+(bw-bwv)/2,sel=S.camp===c.n,dim=S.camp&&!sel;
+    const r=svgEl("rect",{x,y:p.t+ih-bh,width:bwv,height:bh,rx:2,fill:CAMPCOL[c.b]||C.petrol,opacity:dim?.3:1,stroke:sel?C.navy:"none","stroke-width":sel?2:0,style:"cursor:pointer"});
+    s.appendChild(r);
+    const part=(c.f[0]<S.from||c.f[1]>S.to)?"<br><i>Partly outside selected period (in-period share shown)</i>":"";
+    bindTip(r,`<b>${c.n}</b> · ${c.b}<br>Media budget: AED ${fmt(v)}<br>Flight: ${D.months[c.f[0]]} – ${D.months[c.f[1]]}${part}<br><i>Click to ${sel?"clear the filter":"filter the charts above"}</i>`);
+    r.addEventListener("click",()=>{S.camp=sel?null:c.n;tip.style.display="none";render();});
+    txt(s,x+bwv/2,p.t+ih-bh-4,fmt(v),8,C.hgrey,"middle",600);
+    txt(s,p.l+i*bw+bw/2,h-17,c.n,7.5,sel?C.navy:C.hgrey,"middle",sel?700:500);
+    txt(s,p.l+i*bw+bw/2,h-7,(()=>{const a=D.months[c.f[0]].split("-"),z=D.months[c.f[1]].split("-");return c.f[1]===c.f[0]?a.join(" "):(a[1]===z[1]?a[0]+"–"+z[0]+" "+z[1]:a.join(" ")+"–"+z.join(" "));})(),6.5,C.mute,"middle");});
+}
 function compSovBars(id){
   const {s,w,h}=clearSVG(id);const p={l:40,r:10,t:16,b:20};const iw=w-p.l-p.r,ih=h-p.t-p.b;
   const allCats=Object.keys(D.cats).filter(c=>c!=="All categories");
@@ -640,7 +676,7 @@ function compSovBars(id){
 }
 /* ===================== STATE ===================== */
 let S={pg:"biz",mk:"All markets",ct:"All categories",br:"All brands",from:6,to:17,uc:null,flight:null,anno:null,
-       bizKpi:"Awareness",sovCat:"All categories",bizMediaView:"Split by channel",bizSalesMetric:"Sales value",bizKpiMediaView:"Total media",
+       bizKpi:"Awareness",sovCat:"All categories",camp:null,bizMediaView:"Split by channel",bizSalesMetric:"Sales value",bizKpiMediaView:"Total media",
        bhtMetric:"Consideration",salesMetric:"Value",multiType:"All",webType:"All",
        pfPlat:"All platforms",pfCamp:"All campaigns",pfObj:"All objectives",pfRmRet:"All retailers",pfRmPlc:"All placements",
        pfRetailer:"All retailers",pfPromo:"All sales",pfRetChan:"All",
@@ -833,7 +869,11 @@ function stackedBars(id,labels,totals,segShares,segNames,single){
 
 function renderBiz(){
   syncControls();
-  const {medW,mbc}=medBundle();
+  let {medW,mbc}=medBundle();
+  if(S.camp&&!campsInView().some(c=>c.n===S.camp))S.camp=null;
+  const _cp=S.camp?D.arlaCamps.find(c=>c.n===S.camp):null;
+  if(_cp){medW=campMonthly(_cp);mbc={};CHNAMES.forEach(cn=>{mbc[cn]=medW.map(v=>v*(_cp.mix[cn]||0));});}
+  const _cf=_cp?winFlight(_cp.f):null,_cl=_cp?_cp.n+" · campaign only":null;
   const sal=series(D.sales),salPY=series(D.salesPY);
   const sAgg=periodAgg(sal),sAggPY=periodAgg(salPY),mAgg=periodAgg(series(D.media));
   const d=((sAgg/sAggPY-1)*100);
@@ -844,15 +884,17 @@ function renderBiz(){
     kpi("Sales value · selected period",fmtM(sAgg),Math.abs(d).toFixed(1)+"% vs LY",d>=0)
    +(()=>{const fc=D.bht["First Choice"],n=fc[S.to],ly=S.to>=12?fc[S.to-12]:null,dl=ly!=null?n-ly:null;
       return kpi("First choice",n.toFixed(1)+"%",dl!=null?Math.abs(dl).toFixed(1)+" pts vs LY":"",dl==null||dl>=0,"Kantar BHT · "+D.months[S.to]);})()
+   +(()=>{const pp=D.pricePower,n=pp[S.to],ly=S.to>=12?pp[S.to-12]:null,dl=ly!=null?n-ly:null,fv=v=>v%1===0?v.toFixed(0):v.toFixed(1);
+      return kpi("Price power",fv(n),dl!=null?Math.abs(dl).toFixed(1)+" pts vs LY":"",dl==null||dl>=0,"Kantar BHT · "+D.months[S.to]);})()
    +kpi("Media spend",mAgg>=1000?("AED "+(mAgg/1000).toFixed(1)+"M"):fmtK(mAgg),"5.6% MoM",true,perLbl())
-   +kpi("Media contribution","34%","0.8 pts vs LY",true,"of total sales")
    +kpi("Arla SOV","36%","2 pts vs SPLY",true,"share of voice")
    +kpi("Ecom contribution",onlineContrib+"%","2.4 pts vs LY",true,onlineSub);
   ucMinis("bizMinis");
   const L=lineForMetric(S.bizSalesMetric);
-  mediaLineCombo("bizCombo",{medByCh:mbc,medTot:medW,mediaView:S.bizMediaView,line:L.line,linePY:L.linePY,lineName:L.name,lineFmt:L.fmt,lyFmt:L.lyfmt,lmin:L.lmin,flight:(S.ucFocus==="uc1")?winFlight([13,14]):null,flightLabel:"Ramadan"});
+  mediaLineCombo("bizCombo",{medByCh:mbc,medTot:medW,mediaView:S.bizMediaView,line:L.line,linePY:L.linePY,lineName:L.name,lineFmt:L.fmt,lyFmt:L.lyfmt,lmin:L.lmin,flight:_cp?_cf:((S.ucFocus==="uc1")?winFlight([13,14]):null),flightLabel:_cp?_cl:"Ramadan"});
   const bk=D.bht[S.bizKpi]||D.bht["Awareness"];$("#bizKpiName").textContent=S.bizKpi;
-  mediaLineCombo("bizKpiCombo",{medByCh:mbc,medTot:medW,mediaView:S.bizKpiMediaView,line:win(bk),linePY:null,lineName:S.bizKpi,lineFmt:v=>v.toFixed(1)+"%",lmin:Math.min(...bk)-1.5,lyFmt:v=>v.toFixed(0)});
+  mediaLineCombo("bizKpiCombo",{medByCh:mbc,medTot:medW,mediaView:S.bizKpiMediaView,line:win(bk),linePY:null,lineName:S.bizKpi,lineFmt:v=>v.toFixed(1)+"%",lmin:Math.min(...bk)-1.5,lyFmt:v=>v.toFixed(0),flight:_cf,flightLabel:_cl});
+  campBars("bizCamp");$("#campScope").textContent=perLbl();const _cc=$("#campClear");_cc.style.display=_cp?"block":"none";_cc.textContent=_cp?("Filter: "+_cp.n+"  ✕"):"";
   compSovBars("bizCompSov");$("#sovScope").textContent=perLbl();
   drawEpos({retSvg:"eposRet",promoSvg:"eposPromo",skuTbl:"#eposSkus",retScope:"retScope",skuScope:"skuScope"});
   const _cards=["card-sales","card-kpi","card-ret","card-sov","card-promo","card-sku"];
@@ -1008,7 +1050,7 @@ function goPage(pg){
   $$(".page").forEach(p=>p.classList.remove("on"));$("#pg-"+shown).classList.add("on");
   $$(".navbtn,.ucbtn").forEach(b=>b.classList.toggle("on",b.dataset.pg===pg));
   $("#pgname").textContent=PGNAMES[pg];$("#content").scrollTop=0;render();}
-function resetView(){S.mk="All markets";S.ct="All categories";S.br="All brands";S.from=6;S.to=17;S.bizKpi="Awareness";S.sovCat="All categories";S.bizMediaView="Split by channel";S.bizSalesMetric="Sales value";S.bizKpiMediaView="Total media";S.pfRetailer="All retailers";S.pfPromo="All sales";S.pfRetChan="All";
+function resetView(){S.mk="All markets";S.ct="All categories";S.br="All brands";S.from=6;S.to=17;S.bizKpi="Awareness";S.sovCat="All categories";S.camp=null;S.bizMediaView="Split by channel";S.bizSalesMetric="Sales value";S.bizKpiMediaView="Total media";S.pfRetailer="All retailers";S.pfPromo="All sales";S.pfRetChan="All";
   S.ucFocus=null;
   $("#slMarket").value="All markets";$("#slCategory").value="All categories";$("#slBrand").value="All brands";
   $("#slFrom").value=D.months[6];$("#slTo").value=D.months[17];buildSegs();goPage("biz");}
@@ -1043,6 +1085,7 @@ $("#pfSalesLine").onchange=e=>{S.bizSalesMetric=e.target.value;render();};
 $("#pfKpiMedia").onchange=e=>{S.bizKpiMediaView=e.target.value;render();};
 $("#pfKpiMetric").onchange=e=>{S.bizKpi=e.target.value;render();};
 Object.keys(D.cats).forEach(k=>$("#pfSovCat").insertAdjacentHTML("beforeend",`<option>${k}</option>`));
+$("#campClear").onclick=()=>{S.camp=null;render();};
 $("#pfSovCat").onchange=e=>{S.sovCat=e.target.value;render();};
 $$(".navbtn").forEach(b=>b.onclick=()=>goPage(b.dataset.pg));
 ["img.logo",".ttl"].forEach(sel=>{const el=$("#hdr "+sel);if(el){el.style.cursor="pointer";el.title="Home \u2014 Business Performance";el.onclick=()=>goPage("biz");}});

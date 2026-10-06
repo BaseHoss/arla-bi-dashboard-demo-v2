@@ -69,7 +69,8 @@
   .grid.rows{flex:none; grid-auto-rows:238px;}
   .viz{background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 10px 6px; display:flex; flex-direction:column; min-height:0; position:relative;}
   .viz h3{font-size:11px; font-weight:600; color:var(--hgrey); flex:none;}
-  .viz h3 em{color:var(--sky); font-style:normal;}
+  .viz h3 em{color:inherit; font-style:normal;}
+  .retf .pf{flex-direction:column; align-items:stretch; gap:2px;} .retf .pf select{width:100%;}
   .viz .sub{font-size:8.5px; color:var(--mute); flex:none; margin-top:-1px;}
   .viz svg{flex:1; width:100%; min-height:0;}
   .rowsplit{display:flex; gap:8px; flex:1; min-height:0;}
@@ -215,12 +216,14 @@
         <div class="grid rows" style="grid-template-columns:1fr 1fr 1fr; grid-auto-rows:248px;">
           <div class="viz" id="card-ret"><h3>Retail sell-out by retailer · <em id="retScope">YTD</em> <span class="badge" style="margin-left:4px; vertical-align:middle;">EPOS</span></h3>
             <div class="sub"><span style="color:var(--petrol);">■</span> In-store &nbsp; <span style="color:#E0722F;">■</span> Online-only &nbsp;·&nbsp; EPOS sell-out, USD K</div>
-            <div style="display:flex; gap:6px; align-items:center; margin:3px 0 1px; flex-wrap:wrap;">
+            <div style="display:flex; gap:8px; flex:1; min-height:0; margin-top:4px;">
+             <div class="retf" style="display:flex; flex-direction:column; gap:7px; width:92px; flex:none; padding-top:2px;">
               <div class="pf"><label>Retailer</label><select id="pfRetailer"><option>All retailers</option><option>Panda</option><option>Othaim</option><option>Lulu</option><option>Carrefour</option><option>Danube</option><option>Noon</option><option>Talabat</option></select></div>
               <div class="pf"><label>Promo</label><select id="pfPromo"><option>All sales</option><option>Promo</option><option>Non-promo</option></select></div>
               <div class="pf"><label>Channel</label><select id="pfRetChan"><option>All</option><option>In-store</option><option>Online</option></select></div>
-            </div>
-            <svg id="eposRet"></svg></div>
+             </div>
+             <svg id="eposRet" style="flex:1; min-width:0;"></svg>
+            </div></div>
           <div class="viz" id="card-promo"><h3>Promo vs non-promo sales · <em>monthly</em> <span class="badge" style="margin-left:4px; vertical-align:middle;">EPOS</span></h3><div class="sub">Promo vs non-promo share of sell-out · promo dependency watch</div><svg id="eposPromo"></svg></div>
           <div class="viz" id="card-sku" style="overflow:hidden;"><h3>Top SKU sales · <em id="skuScope">selected period</em> <span class="badge" style="margin-left:4px; vertical-align:middle;">EPOS</span></h3><div id="eposSkus" style="overflow:auto; flex:1; margin-top:4px;"></div></div>
         </div>
@@ -905,9 +908,9 @@ function renderBiz(){
       return kpi("Share of AI discovery",n+"%",dl!=null?(dl===0?"flat":Math.abs(dl)+" pts vs LY"):"",dl==null||dl>=0,"SEMRush · "+D.months[S.to]);})();
   ucMinis("bizMinis");
   const L=lineForMetric(S.bizSalesMetric);
-  mediaLineCombo("bizCombo",{medByCh:mbc,medTot:medW,mediaView:S.bizMediaView,line:L.line,linePY:L.linePY,lineName:L.name,lineFmt:L.fmt,lyFmt:L.lyfmt,lmin:L.lmin,flight:_cp?_cf:((S.ucFocus==="uc1")?winFlight([13,14]):null),flightLabel:_cp?_cl:"Ramadan"});
+  mediaLineCombo("bizCombo",{medByCh:mbc,medTot:medW,mediaView:S.bizMediaView,line:L.line,linePY:L.linePY,lineName:L.name,lineFmt:L.fmt,lyFmt:L.lyfmt,lmin:L.lmin,flight:_cp?null:((S.ucFocus==="uc1")?winFlight([13,14]):null),flightLabel:"Ramadan"});
   const bk=D.bht[S.bizKpi]||D.bht["Awareness"];$("#bizKpiName").textContent=S.bizKpi;
-  mediaLineCombo("bizKpiCombo",{medByCh:mbc,medTot:medW,mediaView:S.bizKpiMediaView,line:win(bk),linePY:null,lineName:S.bizKpi,lineFmt:v=>v.toFixed(1)+"%",lmin:Math.min(...bk)-1.5,lyFmt:v=>v.toFixed(0),flight:_cf,flightLabel:_cl});
+  mediaLineCombo("bizKpiCombo",{medByCh:mbc,medTot:medW,mediaView:S.bizKpiMediaView,line:win(bk),linePY:null,lineName:S.bizKpi,lineFmt:v=>v.toFixed(1)+"%",lmin:Math.min(...bk)-1.5,lyFmt:v=>v.toFixed(0)});
   campBars("bizCamp");$("#campScope").textContent=perLbl();const _cc=$("#campClear");_cc.style.display=_cp?"block":"none";_cc.textContent=_cp?("Filter: "+_cp.n+"  ✕"):"";
   compSovBars("bizCompSov");$("#sovScope").textContent=perLbl();
   drawEpos({retSvg:"eposRet",promoSvg:"eposPromo",skuTbl:"#eposSkus",retScope:"retScope",skuScope:"skuScope"});

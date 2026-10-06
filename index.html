@@ -70,7 +70,7 @@
   .viz{background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 10px 6px; display:flex; flex-direction:column; min-height:0; position:relative;}
   .viz h3{font-size:11px; font-weight:600; color:var(--hgrey); flex:none;}
   .viz h3 em{color:inherit; font-style:normal;}
-  .retf .pf{flex-direction:column; align-items:stretch; gap:2px;} .retf .pf select{width:100%;}
+  .retf .pf{flex-direction:column; align-items:stretch; gap:3px; margin:0;} .retf .pf select{width:100%;}
   .viz .sub{font-size:8.5px; color:var(--mute); flex:none; margin-top:-1px;}
   .viz svg{flex:1; width:100%; min-height:0;}
   .rowsplit{display:flex; gap:8px; flex:1; min-height:0;}
@@ -217,7 +217,7 @@
           <div class="viz" id="card-ret"><h3>Retail sell-out by retailer · <em id="retScope">YTD</em> <span class="badge" style="margin-left:4px; vertical-align:middle;">EPOS</span></h3>
             <div class="sub"><span style="color:var(--petrol);">■</span> In-store &nbsp; <span style="color:#E0722F;">■</span> Online-only &nbsp;·&nbsp; EPOS sell-out, USD K</div>
             <div style="display:flex; gap:8px; flex:1; min-height:0; margin-top:4px;">
-             <div class="retf" style="display:flex; flex-direction:column; gap:7px; width:92px; flex:none; padding-top:2px;">
+             <div class="retf" style="display:flex; flex-direction:column; gap:10px; width:86px; flex:none; padding-top:4px;">
               <div class="pf"><label>Retailer</label><select id="pfRetailer"><option>All retailers</option><option>Panda</option><option>Othaim</option><option>Lulu</option><option>Carrefour</option><option>Danube</option><option>Noon</option><option>Talabat</option></select></div>
               <div class="pf"><label>Promo</label><select id="pfPromo"><option>All sales</option><option>Promo</option><option>Non-promo</option></select></div>
               <div class="pf"><label>Channel</label><select id="pfRetChan"><option>All</option><option>In-store</option><option>Online</option></select></div>
@@ -548,7 +548,7 @@ function drawEpos(o){
   const retBase=S.pfRetailer==="All retailers"?retTot:{[S.pfRetailer]:retTot[S.pfRetailer]};
   const ret={},retCol=[];
   Object.entries(retBase).forEach(([k,v])=>{let rv=chSel==="Online"?v*os[k]:chSel==="In-store"?v*(1-os[k]):v;rv=Math.round(rv*promoScale);if(rv>0){ret[k]=rv;retCol.push(online[k]?"#E0722F":C.petrol);}});
-  hbars(o.retSvg,Object.keys(ret).length?ret:{"No retailers in selection":0},retCol.length?retCol:C.petrol);
+  hbars(o.retSvg,Object.keys(ret).length?ret:{"No retailers in selection":0},retCol.length?retCol:C.petrol,false,{l:52,r:34,t:4,b:2});
   const rs=$("#"+o.retScope);if(rs)rs.textContent=perLbl();
   {const {s,w,h}=clearSVG(o.promoSvg);const p={l:26,r:8,t:14,b:18};const iw=w-p.l-p.r,ih=h-p.t-p.b;
    const labs=winLab(),bw=iw/labs.length;
@@ -557,13 +557,15 @@ function drawEpos(o){
    const disp=promoWin.map(base=>{const pv=Math.max(4,Math.min(96,base+retMod+chMod));return prSel==="Non-promo"?100-pv:pv;});
    const PRC="#00C2A4",NPC=C.petrol;
    [["Promo",PRC],["Non-promo",NPC]].forEach(([l,c],j)=>{const lx=p.l+j*70;s.appendChild(svgEl("rect",{x:lx,y:1,width:7,height:7,rx:2,fill:c}));txt(s,lx+10,8,l,7.5,C.hgrey,"start");});
-   disp.forEach((dv,i)=>{const pv=prSel==="Non-promo"?100-dv:dv,x=p.l+i*bw+bw*0.2,bwv=bw*0.6,yP=p.t+ih*(1-pv/100);
+   disp.forEach((dv,i)=>{const pv=prSel==="Non-promo"?100-dv:dv,x=p.l+i*bw+bw*0.11,bwv=bw*0.78,yP=p.t+ih*(1-pv/100);
      const rn=svgEl("rect",{x,y:p.t,width:bwv,height:ih*(1-pv/100),fill:NPC,opacity:prSel==="Promo"?.3:1});
      const rp=svgEl("rect",{x,y:yP,width:bwv,height:ih*pv/100,fill:PRC,opacity:prSel==="Non-promo"?.3:1});
      s.appendChild(rn);s.appendChild(rp);
      bindTip(rn,`<b>${labs[i]}</b><br>Non-promo: ${100-pv}%<br>Promo: ${pv}%`);bindTip(rp,`<b>${labs[i]}</b><br>Promo: ${pv}%<br>Non-promo: ${100-pv}%`);
-     if(labs.length<=8||i%2===0){txt(s,x+bwv/2,yP+ih*pv/200+3,pv+"%",7.5,"#fff","middle",700);txt(s,x+bwv/2,p.t+ih*(1-pv/100)/2+3,(100-pv)+"%",7.5,"#fff","middle",600);}
-     if(labs.length<=8||i%2===0)txt(s,p.l+i*bw+bw/2,h-5,labs[i],7,C.mute,"middle");});}
+     const fs=labs.length>14?6:7.5;
+     txt(s,x+bwv/2,yP+ih*pv/200+3,pv+"%",fs,"#fff","middle",700);txt(s,x+bwv/2,p.t+ih*(1-pv/100)/2+3,(100-pv)+"%",fs,"#fff","middle",600);
+     txt(s,x+bwv/2,h-5,labs[i].split("-")[0],fs,C.mute,"middle");
+     });}
   const wf=(S.to-S.from+1)/12;
   const skus=D.epos.sku2.filter(r=>(S.br==="All brands"||S.br===r.b)&&(S.pfRetailer==="All retailers"||S.pfRetailer===r.ret)
     &&(prSel==="All sales"||(prSel==="Promo")===!!r.pr)&&(chSel==="All"||chSel===r.ch)).sort((a,b)=>b.so-a.so);
@@ -739,8 +741,8 @@ function combo(id,labels,bars,line,linePY,flight,opts){
   if(Math.max(...bars)>0)txt(s,2,p.t+8,bmax>=1000?("USD "+(bmax/1000).toFixed(1)+"M"):("USD "+Math.round(bmax)+"K"),7.5,C.mute,"start");
   txt(s,w-p.r+4,p.t+8,(opts.lyFmt?opts.lyFmt(lmax):lmax.toFixed(1)),7.5,C.petrol,"start");
 }
-function hbars(id,obj,color,withPY){
-  const {s,w,h}=clearSVG(id);const keys=Object.keys(obj);const p={l:106,r:64,t:6,b:4};
+function hbars(id,obj,color,withPY,op){
+  const {s,w,h}=clearSVG(id);const keys=Object.keys(obj);const p=Object.assign({l:106,r:64,t:6,b:4},op||{});
   const iw=w-p.l-p.r,rh=(h-p.t-p.b)/keys.length;
   const max=Math.max(...keys.map(k=>Array.isArray(obj[k])?obj[k][0]:obj[k]))*1.05;
   keys.forEach((k,i)=>{const v=Array.isArray(obj[k])?obj[k][0]:obj[k];const py=Array.isArray(obj[k])&&withPY?obj[k][1]:null;

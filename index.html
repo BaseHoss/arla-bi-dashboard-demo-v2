@@ -56,6 +56,8 @@
   .pf label{font-size:9px; color:var(--hgrey);}
   .pf select{font-family:inherit; font-size:10px; color:var(--body); border:1px solid #CBD3D9; border-radius:4px; padding:2px 5px; background:#fff;}
   .kpirow{display:flex; gap:8px; flex:none;}
+  #bizKpis{display:grid; grid-template-columns:repeat(6,minmax(0,1fr));}
+  #bizKpis .card{min-width:0;}
   .card{background:#fff; border:1px solid var(--line); border-radius:8px; padding:7px 11px; flex:1; position:relative;}
   .kpi .cap{font-size:9px; color:var(--mute); text-transform:uppercase; letter-spacing:.3px; white-space:nowrap;}
   .kpi .val{font-size:20px; font-weight:600; color:var(--sky); line-height:1.15; margin-top:1px; white-space:nowrap;}
@@ -143,6 +145,7 @@
     .pfbar{flex-wrap:wrap; row-gap:5px;}
     .kpirow{flex-wrap:wrap;}
     .kpirow .card{flex:1 1 44%; min-width:44%;}
+    #bizKpis{grid-template-columns:repeat(2,minmax(0,1fr));} #bizKpis .card{min-width:0;}
     .kpi .val{font-size:19px; white-space:normal;}
     .grid{grid-template-columns:1fr !important; grid-auto-rows:auto !important; flex:none !important;}
     .viz{min-height:0;}
@@ -162,6 +165,7 @@
 
   @media (max-width: 820px){
     .kpirow .card{flex:1 1 100%; min-width:100%;}
+    #bizKpis{grid-template-columns:1fr;}
     .viz svg{height:250px;}
     .rowsplit svg{height:250px;}
   }
@@ -905,9 +909,7 @@ function renderBiz(){
       return kpi("Price power",n.toFixed(2),dl!=null?Math.abs(dl).toFixed(1)+"% YoY":"",dl==null||dl>=0,String(yr));})()
    +kpi("Media spend",mAgg>=1000?("USD "+(mAgg/1000).toFixed(1)+"M"):fmtK(mAgg),"5.6% MoM",true,perLbl())
    +kpi("Arla SOV","36%","2 pts vs SPLY",true,"share of voice")
-   +kpi("Ecom contribution",onlineContrib+"%","2.4 pts vs LY",true,onlineSub)
-   +(()=>{const a=D.aiShare,n=a[S.to],ly=S.to>=12?a[S.to-12]:null,dl=ly!=null?n-ly:null;
-      return kpi("Share of AI discovery",n+"%",dl!=null?(dl===0?"flat":Math.abs(dl)+" pts vs LY"):"",dl==null||dl>=0,"SEMRush · "+D.months[S.to]);})();
+   +kpi("Ecom contribution",onlineContrib+"%","2.4 pts vs LY",true,onlineSub);
   ucMinis("bizMinis");
   const L=lineForMetric(S.bizSalesMetric);
   mediaLineCombo("bizCombo",{medByCh:mbc,medTot:medW,mediaView:S.bizMediaView,line:L.line,linePY:L.linePY,lineName:L.name,lineFmt:L.fmt,lyFmt:L.lyfmt,lmin:L.lmin,flight:_cp?null:((S.ucFocus==="uc1")?winFlight([13,14]):null),flightLabel:"Ramadan"});
